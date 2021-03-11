@@ -51,7 +51,6 @@ scrape() ->
     {ok, Metrics} = gen_server:call(?MODULE, scrape),
     Metrics.
 
-
 handle_call(scrape, _from, #st{metrics = Metrics}=State) ->
     {reply, {ok, Metrics}, State};
 handle_call(refresh, _from, #st{refresh=OldRT} = State) ->

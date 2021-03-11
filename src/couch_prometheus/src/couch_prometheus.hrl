@@ -11,3 +11,4 @@
 % the License.
 
 -define(REFRESH_INTERVAL, 60).
+
