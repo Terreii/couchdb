@@ -231,7 +231,8 @@ get_stats() ->
         {process_limit, erlang:system_info(process_limit)},
         {message_queues, {MessageQueues}},
         {internal_replication_jobs, mem3_sync:get_backlog()},
-        {distribution, {get_distribution_stats()}}
+        {distribution, {get_distribution_stats()}},
+        {spidermonkey_version, couch_server:get_spidermonkey_version()}
     ].
 
 db_pid_stats() ->
