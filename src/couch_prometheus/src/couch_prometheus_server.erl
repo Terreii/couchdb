@@ -66,6 +66,7 @@ handle_cast(Msg, State) ->
 
 handle_info(refresh, State) ->
     Metrics = refresh_metrics(),
+    RT = update_refresh_timer(),
     {noreply, State#st{metrics=Metrics}};
 handle_info(Msg, State) ->
     {stop, {unknown_info, Msg}, State}.
