@@ -21,15 +21,17 @@
 ]).
 
 -export([
+    scrape/0
+]).
+
+-export([
     start_link/0,
     init/1,
     handle_call/3,
     handle_cast/2,
     handle_info/2,
     code_change/3,
-    terminate/2,
-
-    scrape/0
+    terminate/2
 ]).
 
 -include("couch_prometheus.hrl").
