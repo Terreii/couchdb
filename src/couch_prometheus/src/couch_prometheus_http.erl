@@ -8,6 +8,7 @@
 ]).
 
 -include("couch_prometheus.hrl").
+-include_lib("couch/include/couch_db.hrl").
 
 start_link() ->
     IP = case config:get("prometheus", "bind_address", "any") of
@@ -39,11 +40,11 @@ handle_request(MochiReq) ->
             ["_node", Node, "_prometheus"] ->
                 send_prometheus(MochiReq, Node);
             _ ->
-                send_resp(MochiReq, 404, [], <<>>)
+                send_error(MochiReq, 404, <<"not_found">>, <<>>)
         end
     catch T:R ->
-        Body = io_lib:format("~p:~p", [T, R]),
-        send_resp(MochiReq, 500, [], Body)
+        Body = list_to_binary(io_lib:format("~p:~p", [T, R])),
+        send_error(MochiReq, 500, <<"server_error">>, Body)
     end.
 
 send_prometheus(MochiReq, Node) ->
@@ -57,6 +58,14 @@ send_resp(MochiReq, Status, ExtraHeaders, Body) ->
     Headers = couch_httpd:server_header() ++ ExtraHeaders,
     MochiReq:respond({Status, Headers, Body}).
 
+send_error(MochiReq, Code, Error, Reason) ->
+    Headers = couch_httpd:server_header() ++ [
+        {<<"Content-Type">>, <<"application/json">>}
+    ],
+    JsonError = {[{<<"error">>,  Error},
+        {<<"reason">>, Reason}]},
+    Body = ?JSON_ENCODE(JsonError),
+    MochiReq:respond({Code, Headers, Body}).
 
 call_node("_local", Mod, Fun, Args) ->
     call_node(node(), Mod, Fun, Args);
