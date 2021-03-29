@@ -30,7 +30,6 @@
 
 -include_lib("couch/include/couch_db.hrl").
 -include_lib("couch_replicator/include/couch_replicator_api_wrap.hrl").
--include("couch_replicator_scheduler.hrl").
 -include("couch_replicator.hrl").
 
 -import(couch_util, [
@@ -320,9 +319,9 @@ handle_info(timeout, InitArgs) ->
     catch
         exit:{http_request_failed, _, _, max_backoff} ->
             {stop, {shutdown, max_backoff}, {error, InitArgs}};
-        Class:Error ->
+        ?STACKTRACE(Class, Error, Stack)
             ShutdownReason = {error, replication_start_error(Error)},
-            StackTop2 = lists:sublist(erlang:get_stacktrace(), 2),
+            StackTop2 = lists:sublist(Stack, 2),
             % Shutdown state is a hack as it is not really the state of the
             % gen_server (it failed to initialize, so it doesn't have one).
             % Shutdown state is used to pass extra info about why start failed.
