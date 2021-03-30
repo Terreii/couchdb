@@ -17,7 +17,10 @@
 -export([
     acquire_map_context/6,
     release_map_context/1,
-    map_docs/2
+    map_docs/2,
+    acquire_context/1,
+    release_context/1,
+    try_compile/3
 ]).
 
 
@@ -35,6 +38,8 @@
 -type result() :: {doc_id(), [[{any(), any()}]]}.
 -type api_mod() :: atom().
 -type context() :: {api_mod(), any()}.
+-type function_name() :: binary().
+-type function_src() :: binary().
 
 -type context_opts() :: #{
     db_name := db_name(),
@@ -50,6 +55,9 @@
 -callback acquire_map_context(context_opts()) -> {ok, any()} | {error, any()}.
 -callback release_map_context(context()) -> ok | {error, any()}.
 -callback map_docs(context(), [doc()]) -> {ok, [result()]} | {error, any()}.
+-callback acquire_context() -> {ok, any()} | {error, any()}.
+-callback release_context(context()) -> ok | {error, any()}.
+-callback try_compile(context(), function_name(), function_src()) -> ok.
 
 
 -spec acquire_map_context(
@@ -85,6 +93,26 @@ release_map_context({ApiMod, Ctx}) ->
 -spec map_docs(context(), [doc()]) -> {ok, result()} | {error, any()}.
 map_docs({ApiMod, Ctx}, Docs) ->
     ApiMod:map_docs(Ctx, Docs).
+
+-spec acquire_context(language()) -> {ok, context()} | {error, any()}.
+acquire_context(Language) ->
+    ApiMod = get_api_mod(Language),
+    {ok, Ctx} = ApiMod:acquire_context(),
+    {ok, {ApiMod, Ctx}}.
+
+
+-spec release_context(context()) -> ok | {error, any()}.
+release_context(nil) ->
+    ok;
+
+release_context({ApiMod, Ctx}) ->
+    ApiMod:release_context(Ctx).
+
+
+-spec try_compile(context(), function_name(), function_src()) -> ok.
+try_compile({ApiMod, Ctx}, FuncName, FuncSrc) -> 
+    ApiMod:try_compile(Ctx, FuncName, FuncSrc).
+
 
 
 get_api_mod(Language) when is_binary(Language) ->
